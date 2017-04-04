@@ -49,10 +49,10 @@ func main() {
 	for _, input := range inputs {
 		// Pad the specified tag so that all the output lines line up.
 		tag := input.tag
-		tag += ": "
 		for i := 0; i < tagLength-len(input.tag); i += 1 {
 			tag += " "
 		}
+		tag += " | "
 
 		wait.Add(1)
 		go func(filename, tag string) {
@@ -61,7 +61,14 @@ func main() {
 		}(input.filename, tag)
 	}
 
+	go func() {
+		for line := range buffer {
+			fmt.Println(line)
+		}
+	}()
+
 	wait.Wait()
+	close(buffer)
 }
 
 func follow(filename, tag string) {
@@ -93,7 +100,7 @@ func follow(filename, tag string) {
 
 			scanner := bufio.NewScanner(f)
 			for scanner.Scan() {
-				fmt.Printf("%s%s\n", tag, scanner.Text())
+				buffer <- fmt.Sprintf("%s%s\n", tag, scanner.Text())
 			}
 
 			offset, _ = f.Seek(0, 1)
@@ -103,3 +110,5 @@ func follow(filename, tag string) {
 		}
 	}
 }
+
+var buffer = make(chan string, 1024)
