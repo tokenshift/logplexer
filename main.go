@@ -100,7 +100,7 @@ func follow(filename, tag string) {
 
 			scanner := bufio.NewScanner(f)
 			for scanner.Scan() {
-				buffer <- fmt.Sprintf("%s%s\n", tag, scanner.Text())
+				buffer <- fmt.Sprintf("%s%s", tag, scanner.Text())
 			}
 
 			offset, _ = f.Seek(0, 1)
